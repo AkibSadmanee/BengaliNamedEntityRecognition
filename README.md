@@ -10,6 +10,11 @@ CRF++ must be installed in the machine.
 
 Download and install instructions : <https://taku910.github.io/crfpp/>
 
+      % ./configure 
+      % make
+      % su
+      # make install
+
 ### How to use ##
 
 Module takes text string as input (with one or many lines) and returns output in a map containing named entities.
