@@ -136,6 +136,8 @@ public class NERModule {
             } catch (InterruptedException ex) {
                 Logger.getLogger(NERModule.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
+            // create final map by marging all NERs for each line.
 
             Set<String> list;
 
