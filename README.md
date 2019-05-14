@@ -3,7 +3,7 @@ Bengali Named Entity Recognition
 This is a JAVA module for Bengali Named Entity Recognition, which used a C++ library called CRF++ as implimentation of learning algorithm.
 Upon a given string, the module can return the person, place and organization names from the string.
 
-# pre-requisites:  
+### pre-requisites:  ###
 
 Need to download and install CRF++ first.
 CRF++ must be installed in the machine. 
