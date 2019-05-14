@@ -24,6 +24,8 @@ public class NERModule {
     Set<String> locations;
     Set<String> others;
     
+    
+    // constructor, initialize entity sets
     public NERModule(){
 
         persons = new HashSet<String>();
@@ -32,6 +34,8 @@ public class NERModule {
         others = new HashSet<String>();
 
     }
+    
+    // getters for the entities
     public Set<String> getPersons(){
         return persons;
 
@@ -48,20 +52,29 @@ public class NERModule {
         return others;
     }
 
+    
+    // this method takes a test file name for CRF++ as input 
+    // generates predicted outputs(named entities) in a file by running the CRF++ model.
+    // read the output file, marge multi word entities,  append the entities in appropriate sets
     public void getNER(String singleLineDocumentFilename) throws IOException, InterruptedException {
+        
+        // command for CRF++ test
         String[] command = { "/bin/bash", "-c", " crf_test -m model "+singleLineDocumentFilename+" "};
         Process proc = new ProcessBuilder(command).start();
-
-
+           
+        // reads the output file generated from CRF++ model using the given sentence
         BufferedReader stdInput = new BufferedReader(new
                 InputStreamReader(proc.getInputStream()));
-
-
+        
+        
+        // marge the consiqutive individual words in a single named entity from output
+        // appends in appropriate entity sets using NER tags
         String string = stdInput.readLine();
         String [] tempArray = string.split("\t");
         String prevString = tempArray[0];
         String prevTag = tempArray[5];
         int mergeCount = 0;
+        
         while ((string = stdInput.readLine()) != null) {
             String []nERArray = string.split("\t");
             if(nERArray.length != 6)
@@ -69,12 +82,13 @@ public class NERModule {
             String currentString = nERArray[0];
             String currentTag = nERArray[5];
             //System.out.println(currentTag);
+            
             if(prevTag.equals(currentTag)){
                 //System.out.println("current tag "+currentTag);
                 prevString +=" "+ currentString;
                 mergeCount++;
-            }
-            else {
+                
+            } else {
                 //System.out.println("prev tag "+prevTag);
                 if(prevTag.equals("B-PER")){
                     persons.add(prevString);
@@ -87,37 +101,36 @@ public class NERModule {
                 else if (prevTag.equals("B-ORG")){
                     organizaion.add(prevString);
 
-                }
-                else
+                } else
                     others.add(prevString);
-                prevString = currentString;
-                prevTag = currentTag;
+                    prevString = currentString;
+                    prevTag = currentTag;
             }
-
-            //System.out.println(nERArray[0]+ " "+nERArray[4]+" "+nERArray[5]);
-
         }
-        //System.out.println("merged "+mergeCount);
-
         proc.destroy();
-
     }
     
 
+    // this mathod takes a full document string as input and returns the map of detected entities
+    // first generates train file from input documents using features (POS, Stemmer) using TrainFileGenerator()
     public Map getNERFromDocument(String news){
+        
         NERModule nercrfapi = new NERModule();
         Map<String, Set<String>> nerMap = new HashMap();
 
-        StringTokenizer st = new StringTokenizer(news, "\\।\\?\\!");
-
         TrainFileGenerator tfg = new TrainFileGenerator();
 
+        // break documents into lines, generates train file, predict NER for each line using getNER() using train file
+        StringTokenizer st = new StringTokenizer(news, "\\।\\?\\!");
+       
         while (st.hasMoreElements()) {
+            
             String line = st.nextElement().toString();
             String singleLineDocumentFilename = tfg.getFeaturesForTesting(line);
 
             try {
                 nercrfapi.getNER(singleLineDocumentFilename);
+                
             } catch (IOException ex) {
                 Logger.getLogger(NERModule.class.getName()).log(Level.SEVERE, null, ex);
             } catch (InterruptedException ex) {
@@ -159,6 +172,7 @@ public class NERModule {
 "দেওয়ানগঞ্জ থানায় একটি হত্যা মামলা হয়েছে বলে জানিয়েছেন পরিদর্শক (তদন্ত) আব্দুল লতিফ মিয়া। আব্দুল্লাহকে গ্রেপ্তারের চেষ্টা চলছে বলে তিনি জানান।\n" +
 "\n" +
 "(ঢাকাটাইমস/১১ফেব্রুয়ারি/প্রতিনিধি/ওআর/এলএ)";
+         
         NERModule nercrfapi = new NERModule();
         Map nerMap = nercrfapi.getNERFromDocument(news);
         
